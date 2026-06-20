@@ -89,15 +89,14 @@
       text-rendering: optimizeLegibility;
     }
 
-    /* The stage IS the viewport: the player scales (fit:"both") to fill it,
-       contained + centered. Because the page bg === the terminal bg, any
-       letterbox from an aspect mismatch is invisible -> seamless "full screen". */
-    #stage {
-      width: 100vw;
-      height: 100svh;
-      position: relative;
-    }
-    #stage .asciinema-player { width: 100%; height: 100%; }
+    /* #stage gets a DEFINITE width (the full viewport); fit:"width" makes the
+       110-col terminal fill that width, so the centered lyric is always fully
+       visible and the whole thing scales with the window. Height is auto (the
+       terminal's own), and <body> centers the band vertically — any extra space
+       is invisible Kimbie. (Crucially: do NOT put grid/place-items on #stage —
+       as the asciinema mount, that collapses its flex wrapper to width 0 and
+       the terminal overflows/clips on the right. Centering belongs on <body>.) */
+    #stage { width: 100vw; }
 
     /* asciinema-player paints its own background on .asciinema-player; make it
        transparent so OUR Kimbie body shows through around rounded corners. */
@@ -227,7 +226,7 @@
 
         // --- look ---
         theme: "kimbie",    // our custom Kimbie Dark terminal theme (CSS above)
-        fit: "both",        // scale to fill the whole viewport (contain + center)
+        fit: "width",       // fill the viewport WIDTH so the lyric is never clipped; <body> centers the band
         terminalLineHeight: 1.2, // a touch tighter than default for density
         terminalFontFamily:
           "'DejaVu Sans Mono', 'Iris Math Fallback', ui-monospace, " +
