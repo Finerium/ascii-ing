@@ -12,7 +12,7 @@ No frameworks. No `pip install`. No `curses`. Just Python's standard library, a 
 
 ## Live demo
 
-**▶ <!-- VERCEL_URL -->**
+**▶ [Watch it live → ascii-ing.vercel.app](https://ascii-ing.vercel.app)** — press play to start.
 
 The web version is a terminal recording played back in the browser via [asciinema-player](https://github.com/asciinema/asciinema-player) — the *exact* frames the engine emits, pixel-for-pixel, no re-implementation. It's **click-to-start**: press play and watch the whole film, including the typewriter, the color cross-fades, and the outro.
 
