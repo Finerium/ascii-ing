@@ -279,32 +279,49 @@
       var PRIMARY = "iris.cast?v=2";
       var FALLBACK = "demo.cast?v=2";
 
-      if (!window.AsciinemaPlayer || typeof window.AsciinemaPlayer.create !== "function") {
-        showNote("asciinema-player did not load from the CDN.");
-        return;
-      }
-
-      // HEAD-probe the primary cast. A successful, non-404 response -> use it;
-      // anything else -> fall back. Network failure also falls back.
-      fetch(PRIMARY, { method: "HEAD" })
-        .then(function (resp) {
-          if (resp.ok) {
-            mount(PRIMARY);
-          } else {
+      function boot() {
+        if (!window.AsciinemaPlayer || typeof window.AsciinemaPlayer.create !== "function") {
+          showNote("asciinema-player did not load from the CDN.");
+          return;
+        }
+        // HEAD-probe the primary cast. A successful, non-404 response -> use it;
+        // anything else -> fall back. Network failure also falls back.
+        fetch(PRIMARY, { method: "HEAD" })
+          .then(function (resp) {
+            if (resp.ok) {
+              mount(PRIMARY);
+            } else {
+              console.warn(
+                "[iris] " + PRIMARY + " -> HTTP " + resp.status +
+                "; falling back to " + FALLBACK + "."
+              );
+              mount(FALLBACK);
+            }
+          })
+          .catch(function (err) {
             console.warn(
-              "[iris] " + PRIMARY + " -> HTTP " + resp.status +
-              "; falling back to " + FALLBACK + "."
+              "[iris] could not reach " + PRIMARY +
+              " (" + err + "); falling back to " + FALLBACK + "."
             );
             mount(FALLBACK);
-          }
-        })
-        .catch(function (err) {
-          console.warn(
-            "[iris] could not reach " + PRIMARY +
-            " (" + err + "); falling back to " + FALLBACK + "."
-          );
-          mount(FALLBACK);
-        });
+          });
+      }
+
+      // Render IDENTICALLY to the real terminal: asciinema-player measures the
+      // cell width once, at create() time. If that runs before DejaVu Sans Mono
+      // has loaded, it measures a fallback font and sizes the 110-col grid wrong
+      // (a first-load font-swap can then mis-fit and clip the right edge). A real
+      // terminal never has this race (its font is always present), so we wait for
+      // the glyph fonts to load BEFORE mounting — making the web grid match.
+      if (document.fonts && typeof document.fonts.load === "function") {
+        Promise.all([
+          document.fonts.load("400 15px 'DejaVu Sans Mono'"),
+          document.fonts.load("700 15px 'DejaVu Sans Mono'"),
+          document.fonts.load("400 15px 'Iris Math Fallback'")
+        ]).then(function () { return document.fonts.ready; }).then(boot, boot);
+      } else {
+        boot();
+      }
     })();
   </script>
 </body>
