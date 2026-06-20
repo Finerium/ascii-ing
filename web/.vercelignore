@@ -1,0 +1,4 @@
+# This file is the deploy root's ignore list, so the repo-root .gitignore
+# (which keeps iris.cast OUT of git) does NOT apply to the Vercel upload —
+# the real recording must ship to the site.
+.DS_Store

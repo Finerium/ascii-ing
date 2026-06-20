@@ -1,0 +1,23 @@
+# --- Lyrics & recordings (content-neutral repo: never commit song lyrics) ---
+# Local .lrc files belong to their owners and must not be distributed.
+*.lrc
+# The live recording may capture real lyrics; keep it local.
+web/iris.cast
+# NOTE: web/demo.cast (the safe, non-lyric demo) IS committed — do not ignore it.
+# NOTE: web/index.html (the asciinema-player page) IS committed — do not ignore it.
+
+# --- Python ---
+__pycache__/
+*.pyc
+
+# --- Tooling / deploy ---
+.vercel
+node_modules/
+.env*
+
+# --- Local notes & personal design docs (kept out of the public portfolio) ---
+run.txt
+docs/
+
+# --- OS ---
+.DS_Store
