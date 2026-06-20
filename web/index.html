@@ -275,8 +275,10 @@
 
       // Prefer the real animation (iris.cast); fall back to demo.cast if it
       // 404s (e.g. it hasn't been recorded yet), so the page always works.
-      var PRIMARY = "iris.cast";
-      var FALLBACK = "demo.cast";
+      // ?v=N busts the browser cache when the recording changes (the .cast is
+      // served immutable for speed). Bump N whenever you re-record.
+      var PRIMARY = "iris.cast?v=2";
+      var FALLBACK = "demo.cast?v=2";
 
       if (!window.AsciinemaPlayer || typeof window.AsciinemaPlayer.create !== "function") {
         showNote("asciinema-player did not load from the CDN.");
