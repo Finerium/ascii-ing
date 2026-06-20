@@ -50,6 +50,18 @@
       src: url("./fonts/DejaVuSansMono.woff2") format("woff2");
     }
     @font-face {
+      /* REAL bold (identical 1233/2048 advance to the regular weight). The
+         lyric is drawn bold; without this file the browser SYNTHESIZES bold,
+         and Safari/WebKit's faux-bold is wider than the measured cell — that
+         overflow clipped the lyric's last glyph(s) (Chrome's faux-bold is
+         narrow enough to fit, which is why it only broke in Safari). */
+      font-family: "DejaVu Sans Mono";
+      font-style: normal;
+      font-weight: 700;
+      font-display: block;
+      src: url("./fonts/DejaVuSansMono-Bold.woff2") format("woff2");
+    }
+    @font-face {
       font-family: "Iris Math Fallback";
       font-style: normal;
       font-weight: 400;
@@ -173,6 +185,13 @@
       --term-color-14: #a09f93; /* bright cyan   */
       --term-color-15: #f4f0e6; /* bright white  */
     }
+
+    /* Use the REAL shipped bold above; NEVER synthesize faux-bold. Safari's
+       synthetic bold renders wider than the cell asciinema measured (from the
+       regular weight), so the bold lyric overflowed and its last glyph(s) were
+       clipped by `.ap-line { overflow: hidden }`. Real DejaVu Bold has an
+       identical advance width, so the grid stays exact and the line fits. */
+    pre.ap-terminal { font-synthesis: none; }
 
     /* A quiet, centered fallback message if everything fails to load. */
     #fallback-note {
