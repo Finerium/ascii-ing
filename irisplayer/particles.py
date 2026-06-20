@@ -117,20 +117,40 @@ class Aurora:
         self.cy = self.height * 0.28
         self.palette = [AURORA_GREEN, AURORA_TEAL, RGB(120, 200, 180), AURORA_VIOLET]
 
+    # The aurora is a *quiet* background motif. Two knobs keep it tasteful:
+    #   * PLACEMENT is gated by intensity -- low-aurora beats raise the wave
+    #     threshold so fewer columns draw (a sparser ribbon). This is how
+    #     per-beat presence is expressed: loud beats fill, quiet beats thin.
+    #   * BRIGHTNESS of each *drawn* wisp is floored so its teal/green/violet
+    #     hue always reads. Without this floor the scene-supplied intensity
+    #     (~0.06-0.35) collapsed the color to near-black (rgb ~4..20) -- the
+    #     "dark worms". The floor lifts only the intensity term, so the
+    #     (0.45 + 0.55*wave) factor still shimmers the curtain.
+    _REF = 0.35          # intensity at/above which the full ribbon draws
+    _BASE_THR = 0.62     # base wave gate (unchanged for loud beats)
+    _THR_RISE = 0.30     # extra gate added as intensity -> 0 (thins quiet beats)
+    _FLOOR_I = 0.42      # minimum effective intensity for a drawn wisp's color
+
     def render(self, canvas: Canvas, t: float, intensity: float = 1.0) -> None:
         if intensity <= 0.02:
             return
         h = self.height
+        # Sparser ribbon when the beat's aurora is quiet; full ribbon when loud.
+        norm = min(1.0, intensity / self._REF)
+        thr = self._BASE_THR + (1.0 - norm) * self._THR_RISE
+        # Floor only the intensity used for *color*, so every drawn wisp shows
+        # its hue while quiet beats stay sparse (gated above) and subtle.
+        bright_i = max(self._FLOOR_I, intensity)
         for x in range(self.width):
             center = (self.cy
                       + math.sin(x * 0.13 + t * 0.5) * h * 0.05
                       + math.sin(x * 0.05 - t * 0.30) * h * 0.04)
             wave = 0.5 + 0.5 * math.sin(x * 0.21 + t * 0.7)
-            if wave < 0.62:                       # sparse, broken ribbon
+            if wave < thr:                        # sparse, broken ribbon
                 continue
             y = int(round(center))
             hue = (x / self.width + t * 0.05) % 1.0
-            col = gradient(self.palette, hue).scale(intensity * (0.45 + 0.55 * wave))
+            col = gradient(self.palette, hue).scale(bright_i * (0.45 + 0.55 * wave))
             canvas.put(x, y, "∿" if (x + int(t * 4)) % 2 == 0 else "~", col)
             if wave > 0.86:
                 canvas.put(x, y + 1, "~", col.scale(0.6))

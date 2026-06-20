@@ -78,31 +78,65 @@
          page and the warm dark-brown is unbroken edge to edge. Never black. */
       background-color: var(--kimbie-bg);
       color: var(--kimbie-fg);
-      /* Full-viewport, player centered. Grid place-items gives a clean,
-         deterministic center without starving the player of a definite size
-         (a flex parent can collapse asciinema's inline-block player to 0). */
-      min-height: 100svh;
+      /* Full-bleed: the animation fills the WHOLE browser viewport (web
+         "fullscreen", not OS fullscreen). No padding, no chrome. */
+      width: 100vw;
+      height: 100svh;
       display: grid;
       place-items: center;
-      padding: clamp(8px, 2.5vmin, 40px);
-      box-sizing: border-box;
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
     }
 
-    /* The stage gives the player a DEFINITE width to measure against. With
-       fit:"width" the player derives its own height from the 110x30 aspect,
-       so we must not impose a competing max-height here. */
+    /* The stage IS the viewport: the player scales (fit:"both") to fill it,
+       contained + centered. Because the page bg === the terminal bg, any
+       letterbox from an aspect mismatch is invisible -> seamless "full screen". */
     #stage {
-      width: min(100%, 1280px);
+      width: 100vw;
+      height: 100svh;
+      position: relative;
     }
+    #stage .asciinema-player { width: 100%; height: 100%; }
 
     /* asciinema-player paints its own background on .asciinema-player; make it
        transparent so OUR Kimbie body shows through around rounded corners. */
     #stage .ap-player,
     #stage .asciinema-player {
       background: transparent !important;
+    }
+
+    /* NO video chrome: hide asciinema's control bar AND its default
+       start-overlay play-triangle. We supply our own quiet start cue. */
+    #stage .ap-control-bar,
+    #stage .ap-overlay-start { display: none !important; }
+
+    /* Our own click-to-start / replay overlay — covers the whole viewport,
+       transparent (the starfield poster shows through), with one faint,
+       gently breathing cue. Nothing that reads as a "video". */
+    #start-overlay {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      z-index: 5;
+      background: transparent;
+      transition: opacity 0.6s ease;
+    }
+    #start-overlay.gone { opacity: 0; pointer-events: none; }
+    #start-overlay .cue {
+      font: 13px/1.5 "DejaVu Sans Mono", ui-monospace, monospace;
+      letter-spacing: 0.28em;
+      text-transform: lowercase;
+      color: var(--kimbie-fg);
+      padding: 0.7em 1.2em;
+      animation: cue-breathe 3.2s ease-in-out infinite;
+      user-select: none;
+    }
+    @keyframes cue-breathe {
+      0%, 100% { opacity: 0.3; }
+      50%      { opacity: 0.68; }
     }
 
     /* ------------------------------------------------------------------ *
@@ -163,6 +197,7 @@
 </head>
 <body>
   <main id="stage" aria-label="Iris — terminal lyric film"></main>
+  <div id="start-overlay"><span class="cue">click to begin</span></div>
   <p id="fallback-note" role="status"></p>
 
   <script
@@ -192,23 +227,49 @@
 
         // --- look ---
         theme: "kimbie",    // our custom Kimbie Dark terminal theme (CSS above)
-        fit: "width",       // fill the stage width; height follows the 110x30 aspect
+        fit: "both",        // scale to fill the whole viewport (contain + center)
         terminalLineHeight: 1.2, // a touch tighter than default for density
         terminalFontFamily:
           "'DejaVu Sans Mono', 'Iris Math Fallback', ui-monospace, " +
           "'SFMono-Regular', Menlo, Consolas, monospace",
 
-        // --- controls: unobtrusive, appear on hover/interaction ---
-        controls: "auto",
+        // --- NO video chrome: controls hidden; we drive start/replay ourselves ---
+        controls: false,
       };
 
-      // Mount the player on a given source URL.
+      // Mount the player and wire our OWN quiet click-to-start / replay, so
+      // there is zero video-player chrome.
       function mount(src) {
+        var player;
         try {
-          window.AsciinemaPlayer.create(src, stage, OPTIONS);
+          player = window.AsciinemaPlayer.create(src, stage, OPTIONS);
         } catch (err) {
           console.error("[iris] asciinema-player failed to initialize:", err);
           showNote("Could not start the player — see console.");
+          return;
+        }
+
+        var overlay = document.getElementById("start-overlay");
+        var cue = overlay.querySelector(".cue");
+        var ended = false;
+
+        function begin() {
+          overlay.classList.add("gone");
+          if (ended) {
+            ended = false;
+            Promise.resolve(player.seek(0)).then(function () { player.play(); });
+          } else {
+            player.play();
+          }
+        }
+        overlay.addEventListener("click", begin);
+
+        if (player && typeof player.addEventListener === "function") {
+          player.addEventListener("ended", function () {
+            ended = true;
+            cue.textContent = "replay";
+            overlay.classList.remove("gone");
+          });
         }
       }
 
