@@ -15,9 +15,12 @@ from .terminal import Terminal, size
 from .timeline import Timeline
 from .scenes import Intro, Lyrics, Outro
 
-# Default frame rates by mode (--fps overrides both).
+# Default frame rates by mode (--fps overrides both). Record at the live rate
+# so the web replay is as smooth as the terminal (fast motion -- shooting stars,
+# comet -- looked choppy/"rushed" at 30fps). asciinema casts are diff-based, so
+# the higher frame count compresses well (and is Brotli-served).
 _LIVE_FPS = 50.0
-_RECORD_FPS = 30.0
+_RECORD_FPS = 50.0
 
 
 # Original, NON-lyric placeholder text for --demo (so the show can be tested

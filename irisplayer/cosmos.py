@@ -92,19 +92,19 @@ class ShootingStars:
     """Frequent streaks across the whole phase, plus an optional burst."""
 
     def __init__(self, width: int, height: int, duration: float,
-                 seed: int = 3, rate: float = 3.2, burst_at: float = None):
+                 seed: int = 3, rate: float = 3.8, burst_at: float = None):
         rng = random.Random(seed)
         self.events: List[Tuple[float, float, float, int]] = []
         t = rng.uniform(0.5, rate)
         while t < duration:
             self.events.append((t, rng.uniform(width * 0.1, width * 0.9),
-                                rng.uniform(0.8, 1.6), rng.choice([1, -1])))
+                                rng.uniform(1.5, 2.5), rng.choice([1, -1])))
             t += rng.uniform(rate * 0.6, rate * 1.4)
         if burst_at is not None:
             for k in range(5):
-                self.events.append((burst_at + k * 0.22 + rng.uniform(0, 0.15),
+                self.events.append((burst_at + k * 0.28 + rng.uniform(0, 0.15),
                                     rng.uniform(width * 0.2, width * 0.8),
-                                    rng.uniform(0.9, 1.5), rng.choice([1, -1])))
+                                    rng.uniform(1.5, 2.3), rng.choice([1, -1])))
 
     def render(self, canvas: Canvas, t: float, width: int, height: int) -> None:
         for (trig, x0, life, d) in self.events:
@@ -128,7 +128,7 @@ class Comet:
     """A bright head with a long fading tail, crossing a few times."""
 
     def __init__(self, width: int, height: int,
-                 times: Sequence[Tuple[float, int, int]], life: float = 3.2):
+                 times: Sequence[Tuple[float, int, int]], life: float = 4.6):
         self.width, self.height, self.times, self.life = width, height, times, life
 
     def render(self, canvas: Canvas, t: float) -> None:

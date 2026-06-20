@@ -142,9 +142,9 @@ class Lyrics(Scene):
         self.moon = cosmos.Moon(width - 12, 4)
         self.nebula = cosmos.Nebula(11, height - 5, 20, 9)
         self.planets = [
-            cosmos.Planet(PLANET_GOLD, y=6, speed=2.4, phase=0.10, glyph="◉", ring=True),
-            cosmos.Planet(PLANET_RUST, y=height - 6, speed=1.6, phase=0.55, glyph="●"),
-            cosmos.Planet(PLANET_ICE, y=3, speed=3.2, phase=0.82, glyph="◍"),
+            cosmos.Planet(PLANET_GOLD, y=6, speed=1.3, phase=0.10, glyph="◉", ring=True),
+            cosmos.Planet(PLANET_RUST, y=height - 6, speed=0.9, phase=0.55, glyph="●"),
+            cosmos.Planet(PLANET_ICE, y=3, speed=1.7, phase=0.82, glyph="◍"),
         ]
         self.comet = cosmos.Comet(width, height, [(5.0, 3, 1), (17.5, 6, -1)])
         self.satellite = cosmos.Satellite(width, height, [(8.0, 2, 1), (21.0, height - 4, -1)])
